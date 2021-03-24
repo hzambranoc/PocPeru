@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- profile para develop/>-->
+    <springProfile name="dev">
+        <property name="LOGS" value="./logs" />
+        <appender name="Console"   class="ch.qos.logback.core.ConsoleAppender">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>
+                    %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
+                </Pattern>
+            </layout>
+        </appender>
+        <!-- appender para registrar las trazas de ejecucion formateadas de OK y KO/>-->
+        <appender name="AppTraceFile"
+                  class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- filtro para registrar  solo el nivel de trace />-->
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>TRACE</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <file>${LOGS}/InvoicesLogExec.log</file>
+
+            <encoder
+                    class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d %X{nameServer} %X{ip} %X{originSystem} %X{appUser} %X{apiName} %X{serviceName} %M %X{timeServiceResponse} %X{timeBackendResponse} %X{result} %X{ejecId} %X{resultCode}  %X{errorCode} %X{errorDesc}%n</Pattern>
+            </encoder>
+
+            <rollingPolicy
+                    class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                <fileNamePattern>${LOGS}/archived/InvoicesLogExec-%d{yyyy-MM-dd}.%i.log
+                </fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy
+                        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+            </rollingPolicy>
+        </appender>
+        <!-- appender para registrar las trazas de aplicacion>-->
+        <appender name="AppLogFile"
+                  class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                 <level>INFO</level>
+                 <onMatch>ACCEPT</onMatch>
+                 <onMismatch>DENY</onMismatch>
+             </filter>-->
+            <file>${LOGS}/InvoicesLogApp.log</file>
+            <encoder
+                    class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d %p %C{1.} %M [%t] %m%n</Pattern>
+            </encoder>
+            <rollingPolicy
+                    class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                <fileNamePattern>${LOGS}/archived/InvoicesLogApp-%d{yyyy-MM-dd}.%i.log
+                </fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy
+                        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+            </rollingPolicy>
+        </appender>
+        <!-- appender para registrar las TopenErrorCommon>-->
+        <appender name="InvoicesErrorCommonLogFile"
+                  class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <file>${LOGS}/InvoicesErrorCommon.log</file>
+            <encoder
+                    class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d %p %C{1.} %M [%t] %m %X{nameServer} %X{ip} %X{originSystem} %X{appUser} %X{apiName} %X{serviceName}  %X{timeServiceResponse} %X{timeBackendResponse} %X{result} %X{ejecId} %X{resultCode}  %X{errorCode} %X{errorDesc}%n</Pattern>
+            </encoder>
+            <rollingPolicy
+                    class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                <fileNamePattern>${LOGS}/archived/InvoicesErrorCommon-%d{yyyy-MM-dd}.%i.log
+                </fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy
+                        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+            </rollingPolicy>
+        </appender>
+        <!-- appender para registrar en kafka>
+        <appender name="kafkaVerboseAppender"
+                  class="com.github.danielwegener.logback.kafka.KafkaAppender">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>TRACE</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <encoder
+                    class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <Pattern>%d %X{nameServer} %X{ip} %X{originSystem} %X{appUser} %X{apiName} %X{serviceName} %M %X{timeServiceResponse} %X{timeBackendResponse} %X{result} %X{ejecId} %X{resultCode}  %X{errorCode} %X{errorDesc}</Pattern>
+                </layout>
+            </encoder>
+            <topic>Webapp_Logs</topic>
+            <keyingStrategy
+                    class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy" />
+            <deliveryStrategy
+                    class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+            <producerConfig>bootstrap.servers=localhost:9092</producerConfig>
+            <producerConfig>retries=5</producerConfig>
+            <producerConfig>acks=0</producerConfig>
+        </appender>-->
+        <!-- appender para registrar las AsyncKafka>
+        <appender name="AsyncKafka" class="ch.qos.logback.classic.AsyncAppender">
+            <appender-ref ref="kafkaVerboseAppender" />
+        </appender>-->
+        <root level="info">
+            <appender-ref ref="Console" />
+            <appender-ref ref="AppLogFile" />
+        </root>
+        <Logger name="com.everis.archivado.invoice.api" level="trace" additivity="false">
+            <appender-ref ref="Console" />
+            <appender-ref ref="AppTraceFile" />
+            <appender-ref ref="AppLogFile" />
+           <!-- <appender-ref ref="AsyncKafka" />-->
+        </Logger>
+        <Logger name="io.swagger.api.erroradvisor" level="trace" additivity="false">
+            <appender-ref ref="Console" />
+            <appender-ref ref="AppTraceFile" />
+            <appender-ref ref="InvoicesErrorCommonLogFile" />
+            <!--<appender-ref ref="AsyncKafka" />-->
+        </Logger>
+    </springProfile>
+
+    <!-- profile para produccion/>-->
+    <springProfile name="prod">
+        <property name="LOGS" value="./logs" />
+        <!-- appender para registrar las trazas de ejecucion formateadas de OK y KO/>-->
+        <appender name="AppTraceFile"
+                  class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>TRACE</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <file>${LOGS}/InvoicesLogExec.log</file>
+
+            <encoder
+                    class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d %X{nameServer} %X{ip} %X{originSystem} %X{appUser} %X{apiName} %X{serviceName} %M %X{timeServiceResponse} %X{timeBackendResponse} %X{result} %X{ejecId} %X{resultCode}  %X{errorCode} %X{errorDesc}%n</Pattern>
+            </encoder>
+
+            <rollingPolicy
+                    class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                <fileNamePattern>${LOGS}/archived/InvoicesLogExec-%d{yyyy-MM-dd}.%i.log
+                </fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy
+                        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+            </rollingPolicy>
+        </appender>
+        <!-- appender para registrar las trazas de aplicacion>-->
+        <appender name="AppLogFile"
+                  class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!--          <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                         <level>DEBUG</level>
+                         <onMatch>DENY</onMatch>
+                         <onMismatch>ACCEPT</onMismatch>
+                     </filter>   -->
+            <file>${LOGS}/InvoicesLogApp.log</file>
+            <encoder
+                    class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d %p %C{1.} %M [%t] %m%n</Pattern>
+            </encoder>
+            <rollingPolicy
+                    class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                <fileNamePattern>${LOGS}/archived/InvoicesLogApp-%d{yyyy-MM-dd}.%i.log
+                </fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy
+                        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+            </rollingPolicy>
+        </appender>
+        <!-- appender para registrar las errore de TopenErrorCommon>-->
+        <appender name="InvoicesErrorCommonLogFile"
+                  class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <file>${LOGS}/InvoicesErrorCommon.log</file>
+            <encoder
+                    class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d %p %C{1.} %M [%t] %m %X{nameServer} %X{ip} %X{originSystem} %X{appUser} %X{apiName} %X{serviceName}  %X{timeServiceResponse} %X{timeBackendResponse} %X{result} %X{ejecId} %X{resultCode}  %X{errorCode} %X{errorDesc}%n</Pattern>
+            </encoder>
+            <rollingPolicy
+                    class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                <fileNamePattern>${LOGS}/archived/InvoicesErrorCommon-%d{yyyy-MM-dd}.%i.log
+                </fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy
+                        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+            </rollingPolicy>
+        </appender>
+        <!-- appender para registrar en kafka>-->
+        <!--<appender name="kafkaVerboseAppender"
+                  class="com.github.danielwegener.logback.kafka.KafkaAppender">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>TRACE</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <encoder
+                    class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <Pattern>%d %X{nameServer} %X{ip} %X{originSystem} %X{appUser} %X{apiName} %X{serviceName} %M %X{timeServiceResponse} %X{timeBackendResponse} %X{result} %X{ejecId} %X{resultCode}  %X{errorCode} %X{errorDesc}</Pattern>
+                </layout>
+            </encoder>
+            <topic>Webapp_Logs</topic>
+            <keyingStrategy
+                    class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy" />
+            <deliveryStrategy
+                    class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+            <producerConfig>bootstrap.servers=localhost:9092</producerConfig>
+            <producerConfig>retries=5</producerConfig>
+        </appender>-->
+        <!-- appender para registrar las AsyncKafka>-->
+        <!--<appender name="AsyncKafka" class="ch.qos.logback.classic.AsyncAppender">
+            <appender-ref ref="kafkaVerboseAppender" />
+        </appender>-->
+        <root level="info">
+            <appender-ref ref="AppLogFile" />
+        </root>
+        <!--Logger para registar solo trazas del paquete -->
+        <Logger name="com.everis.archivado.invoice.api" level="trace" additivity="false">
+            <appender-ref ref="AppTraceFile" />
+            <appender-ref ref="AppLogFile" />
+            <!--<appender-ref ref="AsyncKafka" />-->
+        </Logger>
+
+        <Logger name="io.swagger.api.erroradvisor" level="trace" additivity="false">
+            <appender-ref ref="AppTraceFile" />
+            <appender-ref ref="InvoicesErrorCommonLogFile" />
+            <!--<appender-ref ref="AsyncKafka" />-->
+        </Logger>
+    </springProfile>
+</configuration>
