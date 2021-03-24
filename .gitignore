@@ -7,3 +7,5 @@ target/
 *.classpath
 bin/
 *.log
+.swagger-codegen/VERSION
+.swagger-codegen-ignore
