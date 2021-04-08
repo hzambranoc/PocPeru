@@ -99,12 +99,12 @@
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
-            <version>6.7.1</version>
+            <version>6.8.13</version>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>6.7.1</version>
+            <version>6.8.13</version>
         </dependency>
         <!-- ~~~~~~~~~~~~~~~~~ ElasticSearch dependencies -->
 
